@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang = "en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="description" content="XML Parse (HW4)">
+        <title>HW4: XML Exercise</title>
+        <style>
+            html{
+                background-color: white;
+            }
+            body{
+                width: 315px;
+                margin: 0 auto;
+                color: black;
+            }
+            form{
+                text-align: center;
+            }
+            .caption{
+                font-family: "Times New Roman", Georgia, serif;
+                font-size: 1.2em;
+            }
+            .button{
+                font-family: Arial,Helvetica, Verdana, sans-serif;
+                font-size: 1em;
+                color: rgb(43,30,59);
+                background: linear-gradient(white, #D0D0D0);
+                border: 1px solid #818181;
+                -moz-border-radius: 0.2em;
+                border-radius: 0.2em;
+                padding-top: 2px;
+                padding-bottom: 2px;
+            }
+            .button:hover{
+                color: red;
+            }
+
+        </style>
+    </head>
+    <body>
+        <form id="myform">
+            <p class="caption">Enter URL for Company List XML File</p>
+            <input id="XML_URL" type="text" size="28"/>
+            <p><input type="submit" name="submit" value=" Submit Query " onclick="TestDrive()" class="button"></p>
+        </form>
+        <!-- </body> -->
+        <script type="text/javascript">
+            function loadXML(url) {
+                    if(window.XMLHttpRequest) {  
+                        xmlhttp=new XMLHttpRequest();
+                    } else {
+                        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");   
+                    }
+                    xmlhttp.open("GET",url,false);
+                    xmlhttp.send();
+                    return xmlhttp.responseXML;
+            }
+            function ParseXML() {
+                var xmlurl = document.getElementById("XML_URL").value;
+                if(xmlurl == "") {
+                    alert("Please enter URL of an XML first, then click the submit button");
+                    return false;
+                }
+                var xmlDoc;
+                xmlDoc = loadXML(xmlurl);
+                if(xmlDoc == null) {
+                    alert(" the XML file does not exist "); 
+                    return false;
+                }
+                if(xmlDoc.documentElement.nodeName == "parsererror") {
+                    alert(" Erro in XML file ");
+                    return false;
+                } 
+                var nocompany = xmlDoc.getElementsByTagName("Name");
+                if(nocompany.length == 0) {
+                    alert(" the XML file contains NO companies ");
+                    return false;
+                }
+                return xmlDoc;   
+            }
+            function GenerateXML(xmlDoc) {
+                html_text="<!doctype html>";
+                html_text+="<html><head><title>XML File Result</title>";
+                html_text+="<style>.header{font-weight: bolder;text-align: center;}";
+                html_text+="</style></head><body>";
+                html_text+="<table border='2'>";
+                html_text+="<tbody>";
+                companies = xmlDoc.getElementsByTagName("Row");
+                for(i = 0; i < companies.length; i++) {
+                    companyNodeList=companies.item(i).children;
+                    if(companyNodeList.length > 4) {
+                        html_text+="<tr>";
+                        for(j=0; j < companyNodeList.length; j++) {
+                            if(companyNodeList.item(j).innerHTML == ""){
+                                if(companyNodeList.item(j).nodeName == "Logo"){
+                                    html_text+="<td width='225px' height='225px'>N.A</td>";
+                                } else {
+                                    html_text+="<td>N.A</td>";
+                                }
+                            } else {
+                                if(i == 0) {
+                                    html_text+="<td class='header'>"+companyNodeList.item(j).innerHTML+"</td>";
+                                } else {
+                                    if(companyNodeList.item(j).nodeName == "Logo"){
+                                        html_text+="<td><img src='"+companyNodeList.item(j).firstChild.nodeValue+"' width='225px' height='225px'></td>";
+                                    } else if(companyNodeList.item(j).nodeName == "HomePage"){
+                                        html_text+="<td><a href='"+companyNodeList.item(j).innerHTML+"' target='_blank'>link to company</a></td>";
+                                    } else {
+                                        html_text+="<td>"+companyNodeList.item(j).firstChild.nodeValue+"</td>";   
+                                    }
+                                }
+                            }
+                        }
+                        html_text+="</tr>";
+                    }
+                }
+                html_text+="</tbody>";
+                html_text+="</table>";
+                html_text+="</bo";
+                html_text+="dy></html>";
+            }
+            function TestDrive() {
+                var result = ParseXML();
+                if(result == false) {
+                    document.getElementById("myform").onsubmit = "return false;";
+                    return false;
+                } 
+                result.onload = GenerateXML(result);
+                hWin = window.open("", "XML", "resizable, scrollbars, status");
+                hWin.document.write(html_text);
+                hWin.document.close();
+            }
+            
+        </script>
+    <noscript>
+    </body>
+</html>
